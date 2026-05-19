@@ -27,7 +27,7 @@
  * @param hadc1  ADC handle variable
  * @return the reading of the ADC unconverted
  */
-void read_ADC(ADC_HandleTypeDef hadc1);
+void read_ADC(ADC_HandleTypeDef *hadc1);
 
 /*
  * CAN transmit wraper
