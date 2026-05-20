@@ -9,6 +9,7 @@
 #include "main.h"
 #include <stdint.h>
 #ifndef H2_SENSOR_DRIVER_H
+#define H2_SENSOR_DRIVER_H
 
 /*
  * ADC config
@@ -20,12 +21,11 @@
  * Voltage divider config
  */
 #define DIVIDER_R1 2000.0f
-#define DEVIDER_R2 3000.0f
+#define DIVIDER_R2 3000.0f
 
 /*
  * read ADC data
  * @param hadc1  ADC handle variable
- * @return the reading of the ADC unconverted
  */
 void read_ADC(ADC_HandleTypeDef *hadc1);
 
