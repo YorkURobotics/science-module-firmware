@@ -6,19 +6,19 @@
  */
 
 #include "h2_sensor_driver.h"
-#include <stdint.h>
-
-uint16_t adc_raw = 0;
-uint8_t adc_high = 0;
-uint8_t adc_low = 0;
 
 //===================================================================================
 // HELPER FUNCTIONS
 //===================================================================================
 
-static void convert_adc(uint16_t adc_value) {
-  adc_low = adc_value & 0xFF;
-  adc_high = (adc_value >> 8) & 0xFF;
+static float convert_adc_to_sensor_voltage(uint16_t adc_value) {
+  float adc_voltage = ((float)adc_value / ADC_MAX_VALUE) * ADC_REF_VOLTAGE;
+
+  return adc_voltage * ((DIVIDER_R1 + DIVIDER_R2) / DIVIDER_R2);
+}
+
+static uint16_t convert_voltage_to_millivolts(float voltage) {
+  return (uint16_t)(voltage * 1000.0f);
 }
 
 // TODO: potentially implement DMA to improve the MCU scheduling
@@ -28,29 +28,71 @@ static void convert_adc(uint16_t adc_value) {
 //===================================================================================
 
 /*
- * read ADC data
- * @param hadc1 ADC handle pointer
- * @return none
+ * Initialize H2 sensor driver
+ * @param sensor H2 sensor struct pointer
+ * @param hadc ADC handle pointer
+ * @return HAL status
  */
-void read_ADC(ADC_HandleTypeDef *hadc1) {
-  if (HAL_ADC_Start(hadc1) == HAL_OK) {
-    if (HAL_ADC_PollForConversion(hadc1, 10) == HAL_OK) {
-      adc_raw = HAL_ADC_GetValue(hadc1);
-      convert_adc(adc_raw);
-    }
-
-    HAL_ADC_Stop(hadc1);
+HAL_StatusTypeDef h2_sensor_init(H2_Sensor *sensor, ADC_HandleTypeDef *hadc) {
+  if (sensor == NULL || hadc == NULL) {
+    return HAL_ERROR;
   }
+
+  sensor->hadc = hadc;
+  sensor->adc_raw = 0;
+  sensor->sensor_voltage = 0.0f;
+
+  return HAL_OK;
+}
+
+/*
+ * Read ADC data and convert it to a human-readable sensor voltage
+ * @param sensor H2 sensor struct pointer
+ * @return HAL status
+ */
+HAL_StatusTypeDef read_ADC(H2_Sensor *sensor) {
+  HAL_StatusTypeDef status;
+
+  if (sensor == NULL || sensor->hadc == NULL) {
+    return HAL_ERROR;
+  }
+
+  status = HAL_ADC_Start(sensor->hadc);
+  if (status != HAL_OK) {
+    return status;
+  }
+
+  status = HAL_ADC_PollForConversion(sensor->hadc, 10);
+  if (status == HAL_OK) {
+    sensor->adc_raw = HAL_ADC_GetValue(sensor->hadc);
+    sensor->sensor_voltage = convert_adc_to_sensor_voltage(sensor->adc_raw);
+  }
+
+  if (HAL_ADC_Stop(sensor->hadc) != HAL_OK) {
+    return HAL_ERROR;
+  }
+
+  return status;
 }
 
 /*
  * CAN transmit wrapper
+ * @param hcan CAN handle pointer
+ * @param sensor H2 sensor struct pointer
+ * @return HAL status
  */
-void transmit_h2_sensor_values(CAN_HandleTypeDef *hcan) {
+HAL_StatusTypeDef transmit_h2_sensor_values(CAN_HandleTypeDef *hcan, H2_Sensor *sensor) {
   uint8_t tx_data[8] = {0};
+  uint16_t sensor_millivolts;
 
-  tx_data[0] = adc_high;
-  tx_data[1] = adc_low;
+  if (hcan == NULL || sensor == NULL) {
+    return HAL_ERROR;
+  }
 
-  CAN_TRANSMIT(hcan, CAN_H2_SENSOR_ID, tx_data, 2);
+  sensor_millivolts = convert_voltage_to_millivolts(sensor->sensor_voltage);
+
+  tx_data[0] = (sensor_millivolts >> 8) & 0xFF;
+  tx_data[1] = sensor_millivolts & 0xFF;
+
+  return CAN_TRANSMIT(hcan, CAN_H2_SENSOR_ID, tx_data, 2);
 }
