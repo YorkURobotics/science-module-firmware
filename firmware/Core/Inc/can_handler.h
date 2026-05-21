@@ -17,7 +17,6 @@
 
 #define CAN_DEFAULT_ID 0x0F110000 // TODO: Change ID
 
-#define CAN_H2_SENSOR_ID 0x0F110040 // h2 sensor ID
 
 // -----------------------------------------------------------------------
 // Function Prototypes
