@@ -60,3 +60,8 @@ void Pump_Update(void) {
         }
     }
 }
+
+void Pump_Start_Slow_Continuous(void) {
+    // Just reuse the manual speed function and hand it the safe 450 speed.
+    Pump_SetSpeed(PUMP_DEFAULT_SLOW_SPEED);
+}

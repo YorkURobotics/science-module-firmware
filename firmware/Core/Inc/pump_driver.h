@@ -24,6 +24,9 @@ void Pump_Stop(void);
 // The Timer Check: Put this in the main while(1) loop so the pump knows when to turn itself off.
 void Pump_Update(void);
 
+// Continuous Slow Start: Turn the pump on at the safe speed (450) and leave it on.
+void Pump_Start_Slow_Continuous(void);
+
 #ifdef __cplusplus
 }
 #endif
