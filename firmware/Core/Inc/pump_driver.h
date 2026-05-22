@@ -1,4 +1,3 @@
-// Define
 #ifndef PUMP_DRIVER_H
 #define PUMP_DRIVER_H
 
@@ -8,27 +7,21 @@ extern "C" {
 
 #include "stm32f3xx_hal.h"
 
-// Function Prototypes
+// PUMP CONTROL FUNCTIONS
 
-/**
- * @brief Triggers the pump to run for the calibrated 500mL duration.
- */
-void Pump_Request_500mL(void);
+// Manual Mode: Turn the pump on at a specific speed and leave it on.
+void Pump_SetSpeed(uint16_t pwm_speed);
 
-/**
- * @brief Turns the pump ON.
- * Requires Pump_Stop() to turn off.
- */
-void Pump_Start_Continuous(void);
+// Auto Mode: Turn the pump on at a specific speed, but stop it after X milliseconds.
+void Pump_Start_Timed(uint16_t pwm_speed, uint32_t duration_ms);
 
-/**
- * @brief Immediately halts the pump.
- */
+// Quick Start: Run the pump at a safe, slow speed (450) for X milliseconds.
+void Pump_Start_Slow_Timed(uint32_t duration_ms);
+
+// Emergency Stop: Instantly kill power to the pump.
 void Pump_Stop(void);
 
-/**
- * @brief Background watch for the timed pump.
- */
+// The Timer Check: Put this in the main while(1) loop so the pump knows when to turn itself off.
 void Pump_Update(void);
 
 #ifdef __cplusplus
