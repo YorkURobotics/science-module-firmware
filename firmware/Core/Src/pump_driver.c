@@ -11,7 +11,7 @@ static uint8_t  pump_is_timed = 0;
 static uint32_t pump_start_time = 0;
 static uint32_t current_duration_ms = 0;
 
-
+//IMPORTAN: try to keep pwm speed in a range of 450-1000. Anything below 450 is not enough to spin the motor. Use 0 to stop the pump.
 void Pump_SetSpeed(uint16_t pwm_speed) {
     // Turn off the timer so it doesn't accidentally stop our manual run
     pump_is_timed = 0;
