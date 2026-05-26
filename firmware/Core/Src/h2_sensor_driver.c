@@ -14,7 +14,7 @@
 static float convert_adc_to_sensor_voltage(uint16_t adc_value) {
   float adc_voltage = ((float)adc_value / ADC_MAX_VALUE) * ADC_REF_VOLTAGE;
 
-  return adc_voltage * ((DIVIDER_R1 + DIVIDER_R2) / DIVIDER_R2);
+  return adc_voltage * ( DIVIDER_R2 / (DIVIDER_R1 + DIVIDER_R2));
 }
 
 static uint16_t convert_voltage_to_millivolts(float voltage) {
@@ -82,7 +82,7 @@ HAL_StatusTypeDef read_ADC(H2_Sensor *sensor) {
  * @return HAL status
  */
 HAL_StatusTypeDef transmit_h2_sensor_values(CAN_HandleTypeDef *hcan, H2_Sensor *sensor) {
-  uint8_t tx_data[8] = {0};
+  uint8_t tx_data[2] = {0};
   uint16_t sensor_millivolts;
 
   if (hcan == NULL || sensor == NULL) {
