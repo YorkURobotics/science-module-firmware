@@ -103,6 +103,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    uint16_t current_speed = Pump_GetSpeed();
+      
+    CAN_Send_Pump_Data(&hcan, current_speed);
+      
+    HAL_Delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

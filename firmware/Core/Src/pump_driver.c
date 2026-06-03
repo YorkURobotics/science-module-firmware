@@ -84,3 +84,8 @@ void Pump_Start_Slow_Continuous(void) {
     // Just reuse the manual speed function and hand it the safe 450 speed.
     Pump_SetSpeed(PUMP_DEFAULT_SLOW_SPEED);
 }
+
+// Returns the current speed straight from the hardware timer register
+uint16_t Pump_GetSpeed(void) {
+    return (uint16_t)(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1));
+}

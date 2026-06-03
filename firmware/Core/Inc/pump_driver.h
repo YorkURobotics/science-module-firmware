@@ -23,4 +23,5 @@ void Pump_Update(void);
 // Turn the pump on at the safe speed (450) and leave it on.
 void Pump_Start_Slow_Continuous(void);
 
+uint16_t Pump_GetSpeed(void);
 #endif /* PUMP_DRIVER_H */
