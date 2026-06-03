@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "can_handler.h"
+#include "load_cell_amplifier.h"
 
 /* USER CODE END Includes */
 
@@ -45,6 +46,7 @@
 CAN_HandleTypeDef hcan;
 
 /* USER CODE BEGIN PV */
+HX711_t main_load_cell; // Creates sensor object
 
 /* USER CODE END PV */
 
@@ -97,12 +99,30 @@ int main(void)
   if(HAL_CAN_Start(&hcan) != HAL_OK) Error_Handler();
   HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO1_MSG_PENDING);
 
+  // Initialize the struct with the pins configured in CubeMX
+  HX711_Init(&main_load_cell, GPIOA, HX711_DOUT_Pin, GPIOA, HX711_SCK_Pin);
+
+  // Set calibration scale (must calculate this value experimentally later)
+  main_load_cell.scale = 500000.0f;
+
+  // scale to 0kg (ensure nothing is touching the load cell during this step)
+  HAL_Delay(500); // Give the chip half a second to fully boot up
+  HX711_Tare(&main_load_cell, 20);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    // Read the current weight
+    float current_weight_kg = HX711_GetWeight(&main_load_cell);
+      
+    // Todo: send current_weight_kg over CAN
+
+    // Small delay to prevent locking up the loop during testing
+    HAL_Delay(100);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
