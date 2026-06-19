@@ -51,6 +51,13 @@ typedef struct {
 Soil_Status Soil_ReadAll(UART_HandleTypeDef *huart, Soil_Data *data);
 
 /**
+ * @brief Read all soil parameters averaged over 10 samples
+ *        Collects 10 readings with 500ms between each,
+ *        averages only valid samples, ignores failed ones
+ */
+Soil_Status Soil_ReadAvg(UART_HandleTypeDef *huart, Soil_Data *data);
+
+/**
  * @brief Query the slave ID of the connected sensor (uses broadcast 0xFF)
  *        Modbus: 0xFF 0x03 0x07 0xD0 0x00 0x01 0x91 0x59
  */
