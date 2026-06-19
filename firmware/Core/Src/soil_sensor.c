@@ -102,6 +102,64 @@ Soil_Status Soil_ReadAll(UART_HandleTypeDef *huart, Soil_Data *data)
 }
 
 /**
+ * @brief Read all soil parameters averaged over 10 samples
+ *        Collects 10 readings with 500ms between each,
+ *        averages only valid samples, ignores failed ones
+ */
+Soil_Status Soil_ReadAvg(UART_HandleTypeDef *huart, Soil_Data *data)
+{
+	if (huart == NULL || data == NULL) return SOIL_ERR_TX;
+
+	    Soil_Data samples[10] = {0};
+	    uint8_t validSamples = 0;
+
+	    // Collect 10 samples
+	    for (int i = 0; i < 10; i++)
+	    {
+	        if (Soil_ReadAll(huart, &samples[i]) == SOIL_OK)
+	            validSamples++;
+
+	        HAL_Delay(500);
+	    }
+
+	    if (validSamples == 0) return SOIL_ERR_RX;
+
+	    // Sum valid samples
+	    float sumHumidity     = 0;
+	    float sumTemperature  = 0;
+	    float sumConductivity = 0;
+	    float sumPh           = 0;
+	    float sumNitrogen     = 0;
+	    float sumPhosphorus   = 0;
+	    float sumPotassium    = 0;
+
+	    for (int i = 0; i < 10; i++)
+	    {
+	        if (Soil_ReadAll(huart, &samples[i]) == SOIL_OK)
+	        {
+	            sumHumidity     += samples[i].humidity;
+	            sumTemperature  += samples[i].temperature;
+	            sumConductivity += samples[i].conductivity;
+	            sumPh           += samples[i].ph;
+	            sumNitrogen     += samples[i].nitrogen;
+	            sumPhosphorus   += samples[i].phosphorus;
+	            sumPotassium    += samples[i].potassium;
+	        }
+	    }
+
+	    // Average
+	    data->humidity     = sumHumidity     / validSamples;
+	    data->temperature  = sumTemperature  / validSamples;
+	    data->conductivity = sumConductivity / validSamples;
+	    data->ph           = sumPh           / validSamples;
+	    data->nitrogen     = sumNitrogen     / validSamples;
+	    data->phosphorus   = sumPhosphorus   / validSamples;
+	    data->potassium    = sumPotassium    / validSamples;
+
+	    return SOIL_OK;
+}
+
+/**
  * @brief Query slave ID using broadcast address
  *        Master sends:  FF 03 07 D0 00 01 91 59
  *        Sensor responds: FF 03 02 00 01 CRC CRC
