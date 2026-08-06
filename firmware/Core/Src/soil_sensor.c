@@ -8,7 +8,7 @@
 #include "../Inc/SOIL_SENSOR.h"
 #include <string.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 /* -------------------------------------------------------------------------
  * Private defines
  * ------------------------------------------------------------------------- */
@@ -278,20 +278,21 @@ bool Soil_IsAlive(UART_HandleTypeDef *huart)
 void Soil_FormatData(const Soil_Data *data, char *buf, uint16_t buflen)
 {
     if (data == NULL || buf == NULL) return;
-    snprintf(buf, buflen,
-            "--- Soil Report ---\r\n"
-            "Temperature:  %.1f C\r\n"
-            "Humidity:     %.1f %%RH\r\n"
-            "pH:           %.1f\r\n"
-            "Conductivity: %u us/cm\r\n"
-            "Nitrogen:     %u mg/kg\r\n"
-            "Phosphorus:   %u mg/kg\r\n"
-            "Potassium:    %u mg/kg\r\n\r\n",
-            data->temperature, data->humidity, data->ph,
-            data->conductivity, data->nitrogen,
-            data->phosphorus, data->potassium);
-}
 
+    /* 1. Scale floats by 10 and convert to integers with rounding */
+    int temp_scaled = (int)(data->temperature * 10.0f + (data->temperature >= 0 ? 0.5f : -0.5f));
+    int hum_scaled  = (int)(data->humidity    * 10.0f + 0.5f);
+    int ph_scaled   = (int)(data->ph          * 10.0f + 0.5f);
+
+    /* 2. Format as whole.fraction (%d.%d) using standard integer printf */
+    snprintf(buf, buflen,
+            "Temp: %d.%d C | Hum: %d.%d %% | pH: %d.%d | EC: %u us/cm | NPK: %u,%u,%u mg/kg\r\n",
+            temp_scaled / 10, abs(temp_scaled % 10),
+            hum_scaled  / 10, abs(hum_scaled  % 10),
+            ph_scaled   / 10, abs(ph_scaled   % 10),
+            data->conductivity,
+            data->nitrogen, data->phosphorus, data->potassium);
+}
 /**
  * @brief Convert status to string
  */
