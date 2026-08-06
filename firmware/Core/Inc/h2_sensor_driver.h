@@ -11,12 +11,14 @@
 
 #include "main.h"
 #include <stdint.h>
+#include "can_handler.h"
 
 /*
  * ADC config
  */
 #define ADC_MAX_VALUE 4095.0f
 #define ADC_REF_VOLTAGE 3.3f
+#define CAN_H2_SENSOR_ID 50 //Example Value MUST CHANGE
 
 /*
  * Voltage divider config
