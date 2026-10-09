@@ -5,9 +5,11 @@
  *      Author: Tirth Patel
  */
 
+
 #include <stdint.h>
 
 #include "can_handler.h"
+#include "pump_driver.h"
 
 HAL_StatusTypeDef CAN_CONFIG(CAN_HandleTypeDef *hcan) {
 	CAN_FilterTypeDef sFilterConfig;
@@ -44,9 +46,22 @@ void CAN_Process_Incoming(uint32_t id, uint8_t *data, uint8_t len) {
 		case CAN_DEFAULT_ID:
 		// Handle specific logic for CAN_DEFAULT_ID here
 			break;
-//		case CAN_SERVO1:
-//		// Handle specific logic for CAN_SERVO1 here
-//			break;
+
+		case CAN_PUMP_ID:
+
+      if (len < 2 || data == NULL){
+        return;    
+      }
+
+      //assemble the speed from payload
+      uint16_t speed = 0; 
+      speed = data[0];
+      speed |= data[1] << 8;
+
+      //set speed
+      Pump_SetSpeed(speed);
+			break;
+
 		default:
 			// Log unknown IDs for debugging
 			break;
